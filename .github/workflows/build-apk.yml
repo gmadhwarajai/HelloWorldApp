@@ -6,16 +6,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
-      - run: gradle assembleDebug
+      - name: Build APK
+        run: |
+          echo "Android SDK: $ANDROID_HOME"
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          curl -sSL -o gradle.zip https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q gradle.zip -d "$RUNNER_TEMP"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$RUNNER_TEMP/gradle-8.7/bin/gradle" assembleDebug --no-daemon --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: HelloWorld-apk
